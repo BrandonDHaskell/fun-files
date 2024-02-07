@@ -139,7 +139,44 @@ enable_parallax_motion_blur_button = pygame_gui.elements.UIButton(relative_rect=
                                                            text="Parallax: OFF",
                                                            manager=manager)
 
+class Star:
+    def __init__(self, origin, min_speed, max_speed, has_tail=False):
+        self.origin = origin            # Tuple (x, y)
+        self.min_speed = min_speed      # min random speed range
+        self.max_speed = max_speed      # max random speed range
+        self.has_tail = has_tail        # Boolena to determine if star has a trailing tail
+        self.reset()                    # initialize speed, direction, velocity, and position
 
+    def move(self):
+        # Update star's position based on its velocity
+        self.position = (self.position[0] + self.velocity[0], self.position[1] + self.velocity[1])
+        self.update_tail_length()
+
+    def reset(self, new_origin=None):
+        # Optionally reset the star to a new origin
+        if new_origin:
+            self.origin = new_origin
+        # Generate new speed and direction
+        self.speed = random.uniform(self.min_speed, self.max_speed)
+        self.direction = random.uniform(0, 2 * math.pi)
+        self.velocity = (math.cos(self.direction) * self.speed, math.sin(self.direction) * self.speed)
+        self.position = self.origin
+        self.tail_length = 0  # Reset tail length
+
+    def update_tail_length(self):
+        # Update tail length based on distance from origin
+        distance = math.sqrt((self.position[0] - self.origin[0])**2 + (self.position[1] - self.origin[1])**2)
+        self.tail_length = max(0, distance - 50)  # Tail starts showing when distance > 50, adjust as needed
+
+    def draw(self, screen):
+        # Draw the star
+        pygame.draw.circle(screen, (255, 255, 255), (int(self.position[0]), int(self.position[1])), 1)
+        if self.has_tail and self.tail_length > 0:
+            # Calculate tail end position
+            tail_end_x = self.position[0] - self.velocity[0] * self.tail_length / self.speed
+            tail_end_y = self.position[1] - self.velocity[1] * self.tail_length / self.speed
+            # Draw the tail
+            pygame.draw.line(screen, (255, 255, 255), (int(self.position[0]), int(self.position[1])), (int(tail_end_x), int(tail_end_y)), 1)
 
 # Gets a new start at the origin location
 def get_star(origin):
